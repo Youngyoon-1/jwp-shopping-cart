@@ -17,10 +17,10 @@ public class Customer {
     }
 
     public String getUsername() {
-        return name.get();
+        return name.getName();
     }
 
     public String getEmail() {
-        return email.get();
+        return email.getEmail();
     }
 }

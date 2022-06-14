@@ -20,14 +20,14 @@ public class CustomerService {
 
     private final CustomerDao customerDao;
 
-    public CustomerService(CustomerDao customerDao) {
+    public CustomerService(final CustomerDao customerDao) {
         this.customerDao = customerDao;
     }
 
-    public SignUpResponse signUp(SignUpRequest signUpRequest) {
-        String name = signUpRequest.getUsername();
-        String email = signUpRequest.getEmail();
-        String password = signUpRequest.getPassword();
+    public SignUpResponse signUp(final SignUpRequest signUpRequest) {
+        final String name = signUpRequest.getUsername();
+        final String email = signUpRequest.getEmail();
+        final String password = signUpRequest.getPassword();
 
         signUpRequest.toCustomer();
 
@@ -40,39 +40,39 @@ public class CustomerService {
         return new SignUpResponse(name, email);
     }
 
-    private void validatedDuplicatedEmail(String email) {
+    private void validatedDuplicatedEmail(final String email) {
         if (customerDao.isExistEmail(email)) {
             throw new InvalidCustomerException(DUPLICATED_EMAIL);
         }
     }
 
-    private void validateDuplicatedName(String name) {
+    private void validateDuplicatedName(final String name) {
         if (customerDao.isExistName(name)) {
             throw new InvalidCustomerException(DUPLICATED_NAME);
         }
     }
 
-    public void changePassword(AuthorizedCustomer authorizedCustomer, ChangePasswordRequest changePasswordRequest) {
-        var customer = authorizedCustomer.toCustomer();
+    public void changePassword(final AuthorizedCustomer authorizedCustomer, final ChangePasswordRequest changePasswordRequest) {
+        final var customer = authorizedCustomer.toCustomer();
 
-        var password = new Password(changePasswordRequest.getPassword());
+        final var password = new Password(changePasswordRequest.getPassword());
         validateSamePassword(password, customer);
 
-        var newPassword = new Password(changePasswordRequest.getNewPassword());
+        final var newPassword = new Password(changePasswordRequest.getNewPassword());
 
-        customerDao.updatePassword(customer.getUsername(), newPassword.get());
+        customerDao.updatePassword(customer.getUsername(), newPassword.getPassword());
     }
 
-    private void validateSamePassword(Password password, Customer customer) {
+    private void validateSamePassword(final Password password, final Customer customer) {
         if (!customer.isSamePassword(password)) {
             throw new InvalidCustomerException(NOT_MATCH_PASSWORD);
         }
     }
 
-    public void deleteUser(AuthorizedCustomer authorizedCustomer, DeleteCustomerRequest deleteCustomerRequest) {
-        var password = new Password(deleteCustomerRequest.getPassword());
+    public void deleteUser(final AuthorizedCustomer authorizedCustomer, final DeleteCustomerRequest deleteCustomerRequest) {
+        final var password = new Password(deleteCustomerRequest.getPassword());
 
-        var customer = authorizedCustomer.toCustomer();
+        final var customer = authorizedCustomer.toCustomer();
 
         validateSamePassword(password, customer);
 
