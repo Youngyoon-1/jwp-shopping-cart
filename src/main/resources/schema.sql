@@ -12,11 +12,16 @@ create table customer
 (
     id       bigint       not null auto_increment,
     username varchar(255) not null,
+    email    varchar(255) not null,
+    password varchar(255) not null,
     primary key (id)
 ) engine=InnoDB default charset=utf8mb4;
 
 alter table customer
     add unique key (username);
+
+alter table customer
+    add unique key (email);
 
 create table product
 (
@@ -29,9 +34,11 @@ create table product
 
 create table cart_item
 (
-    id          bigint not null auto_increment,
-    customer_id bigint not null,
-    product_id  bigint not null,
+    id          bigint  not null auto_increment,
+    customer_id bigint  not null,
+    product_id  bigint  not null,
+    quantity    int     not null,
+    checked     BOOLEAN not null,
     primary key (id)
 ) engine=InnoDB default charset=utf8mb4;
 

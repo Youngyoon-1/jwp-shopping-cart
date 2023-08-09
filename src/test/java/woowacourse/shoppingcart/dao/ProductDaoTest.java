@@ -1,93 +1,56 @@
 package woowacourse.shoppingcart.dao;
 
-import org.junit.jupiter.api.DisplayName;
+import static org.assertj.core.api.Assertions.assertThat;
+import static woowacourse.shoppingcart.ProductFixture.PAPER;
+import static woowacourse.shoppingcart.ProductFixture.CHEESE;
+import static woowacourse.shoppingcart.ProductFixture.PEN;
+import static woowacourse.shoppingcart.ProductFixture.WATER;
+
+import java.util.stream.Stream;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.Arguments;
+import org.junit.jupiter.params.provider.MethodSource;
 import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase;
 import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase.Replace;
 import org.springframework.boot.test.autoconfigure.jdbc.JdbcTest;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.test.context.TestConstructor;
 import org.springframework.test.context.jdbc.Sql;
-import woowacourse.shoppingcart.domain.Product;
-
-import java.util.List;
-
-import static org.assertj.core.api.Assertions.assertThat;
 
 @JdbcTest
 @AutoConfigureTestDatabase(replace = Replace.NONE)
-@Sql("classpath:schema.sql")
+@Sql("/init.sql")
 @TestConstructor(autowireMode = TestConstructor.AutowireMode.ALL)
 public class ProductDaoTest {
 
-    private final ProductDao productDao;
+    private ProductDao productDao;
 
     public ProductDaoTest(JdbcTemplate jdbcTemplate) {
         this.productDao = new ProductDao(jdbcTemplate);
     }
 
-    @DisplayName("Product를 저장하면, id를 반환한다.")
-    @Test
-    void save() {
-        // given
-        final String name = "초콜렛";
-        final int price = 1_000;
-        final String imageUrl = "www.test.com";
-
-        // when
-        final Long productId = productDao.save(new Product(name, price, imageUrl));
-
-        // then
-        assertThat(productId).isEqualTo(1L);
+    public static Stream<Arguments> provide() {
+        return Stream.of(
+                Arguments.of(1L, WATER),
+                Arguments.of(2L, CHEESE),
+                Arguments.of(3L, PAPER),
+                Arguments.of(4L, PEN)
+        );
     }
 
-    @DisplayName("productID를 상품을 찾으면, product를 반환한다.")
     @Test
-    void findProductById() {
-        // given
-        final String name = "초콜렛";
-        final int price = 1_000;
-        final String imageUrl = "www.test.com";
-        final Long productId = productDao.save(new Product(name, price, imageUrl));
-        final Product expectedProduct = new Product(productId, name, price, imageUrl);
+    void 상품_목록_조회() {
+        var products = productDao.findProducts();
 
-        // when
-        final Product product = productDao.findProductById(productId);
-
-        // then
-        assertThat(product).usingRecursiveComparison().isEqualTo(expectedProduct);
+        assertThat(products.size()).isEqualTo(4);
     }
 
-    @DisplayName("상품 목록 조회")
-    @Test
-    void getProducts() {
+    @ParameterizedTest
+    @MethodSource("provide")
+    void 상품_ID로_조회() {
+        var products = productDao.findProductById(1L);
 
-        // given
-        final int size = 0;
-
-        // when
-        final List<Product> products = productDao.findProducts();
-
-        // then
-        assertThat(products).size().isEqualTo(size);
-    }
-
-    @DisplayName("싱품 삭제")
-    @Test
-    void deleteProduct() {
-        // given
-        final String name = "초콜렛";
-        final int price = 1_000;
-        final String imageUrl = "www.test.com";
-
-        final Long productId = productDao.save(new Product(name, price, imageUrl));
-        final int beforeSize = productDao.findProducts().size();
-
-        // when
-        productDao.delete(productId);
-
-        // then
-        final int afterSize = productDao.findProducts().size();
-        assertThat(beforeSize - 1).isEqualTo(afterSize);
+        assertThat(products).isEqualTo(WATER);
     }
 }
